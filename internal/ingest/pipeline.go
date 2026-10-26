@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/abhiraj-ku/ChaanBin/internals/models"
-	"github.com/abhiraj-ku/ChaanBin/internals/store"
+	"github.com/abhiraj-ku/ChaanBin/internal/models"
+	"github.com/abhiraj-ku/ChaanBin/internal/store"
 )
 
 type Pipeline struct {
