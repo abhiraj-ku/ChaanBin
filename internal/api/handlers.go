@@ -43,7 +43,6 @@ func (h *Handler) SearchLogs(w http.ResponseWriter, r *http.Request) {
 		req.DaysLookback = 7
 	}
 
-	// todo: real emebeding service call
 	queryVec, err := h.Embedder.GetEmbeds(r.Context(), req.Query)
 	if err != nil {
 		http.Error(w, "failed to generate search emebedding", http.StatusInternalServerError)
@@ -74,8 +73,4 @@ func (h *Handler) SearchLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-}
-
-func mockEmbedding(query string) []float32 {
-	return make([]float32, 1536)
 }
