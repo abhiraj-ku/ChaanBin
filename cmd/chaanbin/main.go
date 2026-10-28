@@ -13,6 +13,7 @@ import (
 
 	"github.com/abhiraj-ku/ChaanBin/internal/api"
 	"github.com/abhiraj-ku/ChaanBin/internal/db"
+	"github.com/abhiraj-ku/ChaanBin/internal/embedding"
 	"github.com/abhiraj-ku/ChaanBin/internal/store"
 )
 
@@ -36,8 +37,10 @@ func main() {
 	}
 	defer db.Close()
 
+	emebedder := embedding.NewOllamaClient("http://localhost:11434", "nomic-embed-text")
+
 	repo := store.NewLogRepository(db)
-	handler := &api.Handler{Repo: repo}
+	handler := &api.Handler{Repo: repo, Embedder: emebedder}
 
 	// routiung
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/abhiraj-ku/ChaanBin/internal/embedding"
 	"github.com/abhiraj-ku/ChaanBin/internal/store"
 )
 
@@ -15,7 +16,8 @@ type SearchRequest struct {
 }
 
 type Handler struct {
-	Repo *store.LogRepository
+	Repo     *store.LogRepository
+	Embedder *embedding.OllamaClient
 }
 
 func (h *Handler) SearchLogs(w http.ResponseWriter, r *http.Request) {
@@ -42,10 +44,14 @@ func (h *Handler) SearchLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// todo: real emebeding service call
-	queryEmb := mockEmbedding(req.Query)
+	queryVec, err := h.Embedder.GetEmbeds(r.Context(), req.Query)
+	if err != nil {
+		http.Error(w, "failed to generate search emebedding", http.StatusInternalServerError)
+		return
+	}
 
 	params := store.SearchParams{
-		QueryVector:  queryEmb,
+		QueryVector:  queryVec,
 		Severity:     req.Severity,
 		DaysLookback: req.DaysLookback,
 		Limit:        req.Limit,
