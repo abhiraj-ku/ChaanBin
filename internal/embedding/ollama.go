@@ -9,6 +9,12 @@ import (
 	"time"
 )
 
+// task prefix required by nomic-emebed-text emebeding
+const (
+	PrefixDocument = "search_document: "
+	PrefixQuery    = "search_query: "
+)
+
 type OllamaClient struct {
 	BaseURL    string
 	Model      string
@@ -32,6 +38,18 @@ func NewOllamaClient(baseURL, model string) *OllamaClient {
 			Timeout: 10 * time.Second,
 		},
 	}
+}
+
+// prepends document prefix (used during ingestion)
+func (c *OllamaClient) GetDocPrefix(ctx context.Context, text string) ([]float32, error) {
+	return c.GetEmbeds(ctx, PrefixDocument+text)
+
+}
+
+// prepends query prefix (used during ingestion)
+func (c *OllamaClient) GetQueryPrefix(ctx context.Context, text string) ([]float32, error) {
+	return c.GetEmbeds(ctx, PrefixQuery+text)
+
 }
 
 func (c *OllamaClient) GetEmbeds(ctx context.Context, text string) ([]float32, error) {

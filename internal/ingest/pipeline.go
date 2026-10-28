@@ -6,12 +6,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/abhiraj-ku/ChaanBin/internal/embedding"
 	"github.com/abhiraj-ku/ChaanBin/internal/models"
 	"github.com/abhiraj-ku/ChaanBin/internal/store"
 )
 
 type Pipeline struct {
 	repo         *store.LogRepository
+	embedder     *embedding.OllamaClient
 	workerCount  int
 	batchSize    int
 	flushTimeout time.Duration
@@ -68,7 +70,12 @@ func (p *Pipeline) runWorker(ctx context.Context, in <-chan models.LogEntry, out
 				return // channel is closed
 			}
 			// TODO: actual http call to embedding models for the logs to get vectorize
-			entry.Embedding = p.mockEmbedding(entry.Message)
+			emd, err := p.embedder.GetDocPrefix(ctx, entry.Message)
+			if err != nil {
+				log.Printf("failed to gen embedding for service %s: %v", entry.ServiceName, err)
+				continue
+			}
+			entry.Embedding = emd
 
 			select {
 			case out <- entry:
@@ -117,8 +124,4 @@ func (p *Pipeline) runFlusher(ctx context.Context, in <-chan models.LogEntry) {
 		}
 	}
 
-}
-
-func (p *Pipeline) mockEmbedding(msg string) []float32 {
-	return make([]float32, 1536)
 }

@@ -43,7 +43,7 @@ func (h *Handler) SearchLogs(w http.ResponseWriter, r *http.Request) {
 		req.DaysLookback = 7
 	}
 
-	queryVec, err := h.Embedder.GetEmbeds(r.Context(), req.Query)
+	queryVec, err := h.Embedder.GetQueryPrefix(r.Context(), req.Query)
 	if err != nil {
 		http.Error(w, "failed to generate search emebedding", http.StatusInternalServerError)
 		return
