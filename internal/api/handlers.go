@@ -1,12 +1,20 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
-	"github.com/abhiraj-ku/ChaanBin/internal/embedding"
 	"github.com/abhiraj-ku/ChaanBin/internal/store"
 )
+
+type LogSearcher interface {
+	SearchSimilarLogs(context.Context, store.SearchParams) ([]store.SearchResults, error)
+}
+
+type QueryEmbedder interface {
+	GetQueryPrefix(context.Context, string) ([]float32, error)
+}
 
 type SearchRequest struct {
 	Query        string  `json:"query"`
@@ -16,8 +24,8 @@ type SearchRequest struct {
 }
 
 type Handler struct {
-	Repo     *store.LogRepository
-	Embedder *embedding.OllamaClient
+	Repo     LogSearcher
+	Embedder QueryEmbedder
 }
 
 func (h *Handler) SearchLogs(w http.ResponseWriter, r *http.Request) {

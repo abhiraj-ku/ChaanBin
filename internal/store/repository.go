@@ -43,9 +43,14 @@ func (r *LogRepository) BulkInsert(ctx context.Context, logs []models.LogEntry) 
 	batch := &pgx.Batch{}
 
 	query := `
-	
-		insert into app_log(service_name,severity,message,ingested_at,embedding)
-		values($1,$2,$3,$4,$5)`
+		insert into app_logs (
+			service_name,
+			severity,
+			message,
+			ingested_at,
+			embedding
+		)
+		values ($1, $2, $3, $4, $5)`
 
 	for _, log := range logs {
 		batch.Queue(query, log.ServiceName, log.Severity, log.Message, log.TimeStamp, log.Embedding)
@@ -69,11 +74,16 @@ func (r *LogRepository) BulkInsert(ctx context.Context, logs []models.LogEntry) 
 func (r *LogRepository) SearchSimilarLogs(ctx context.Context, params SearchParams) ([]SearchResults, error) {
 
 	query := `
-		select id,service_name,severity,message.ingested_at,
-		1-(embedding <=> ) as similarity
+		select
+			id,
+			service_name,
+			severity,
+			message,
+			ingested_at,
+			1 - (embedding <=> $1) as similarity
 		from app_logs
-		where ($2::text is null or severity  $2)
-		and ingested_at >= now() - ($3::int || 'days')::interval
+		where ($2::text is null or severity = $2)
+		and ingested_at >= now() - ($3::int || ' days')::interval
 		order by embedding <=> $1
 		limit $4
 	`
